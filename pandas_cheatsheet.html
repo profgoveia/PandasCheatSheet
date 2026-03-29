@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0e0e12; --surface: #17171e; --surface2: #1e1e28;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #e8e6f0; --muted: #8a8799;
+    --a1: #a78bfa; --a2: #34d399; --a3: #f59e0b;
+    --a4: #f87171; --a5: #60a5fa; --a6: #fb923c;
+    --code-bg: #0a0a0f;
+  }
+  body { font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:48px 32px; line-height:1.6; }
+  .page { max-width:1100px; margin:0 auto; }
+  header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:48px; padding-bottom:24px; border-bottom:1px solid var(--border2); }
+  .logo-area h1 { font-size:42px; font-weight:800; letter-spacing:-1.5px; background:linear-gradient(135deg,#a78bfa,#60a5fa,#34d399); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1.1; }
+  .logo-area p { color:var(--muted); font-size:14px; margin-top:6px; }
+  .badge-list { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .badge { background:rgba(167,139,250,0.12); color:#c4b5fd; border:1px solid rgba(167,139,250,0.2); padding:4px 12px; border-radius:99px; font-size:12px; font-weight:600; }
+  .sl { font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+  .grid { display:grid; gap:20px; margin-bottom:40px; }
+  .ga { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 24px; transition:border-color 0.2s; }
+  .card:hover { border-color:var(--border2); }
+  .ch { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+  .ci { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .card h3 { font-size:14px; font-weight:700; color:var(--text); }
+  .cb { margin-bottom:18px; }
+  .cb:last-child { margin-bottom:0; }
+  .cn { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--a1); margin-bottom:6px; display:block; }
+  .cd { font-size:13px; color:var(--muted); margin-bottom:8px; line-height:1.5; }
+  pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:12px 14px; overflow-x:auto; margin-bottom:6px; }
+  code { font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.7; color:#cbd5e1; }
+  .kw{color:#a78bfa;} .fn{color:#60a5fa;} .str{color:#34d399;} .num{color:#f59e0b;} .cm{color:#4a4a6a;} .param{color:#f87171;} .op{color:#94a3b8;}
+  .tr { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .t { font-size:11px; padding:2px 8px; border-radius:4px; font-weight:600; }
+  .tu { background:rgba(52,211,153,0.10); color:#34d399; }
+  .tw { background:rgba(248,113,113,0.10); color:#f87171; }
+  .ti { background:rgba(96,165,250,0.10); color:#60a5fa; }
+  .ta { background:rgba(245,158,11,0.10); color:#f59e0b; }
+  .divider { height:1px; background:var(--border); margin:32px 0; }
+  .fw { grid-column:1/-1; }
+  .qg { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:6px; }
+  .qi { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:var(--surface2); }
+  @media(max-width:700px){.ga{grid-template-columns:1fr;} header{flex-direction:column;align-items:flex-start;gap:16px;} body{padding:28px 18px;} .logo-area h1{font-size:30px;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="logo-area">
+    <h1>Pandas Cheat Sheet</h1>
+    <p>Referência completa para Ciência de Dados &amp; Pré-processamento</p>
+  </div>
+  <div class="badge-list">
+    <span class="badge">Leitura</span><span class="badge">Inspeção</span><span class="badge">Limpeza</span>
+    <span class="badge">Reshape</span><span class="badge">Merge</span><span class="badge">Agrupamento</span>
+    <span class="badge">Feature Eng.</span><span class="badge">Time Series</span><span class="badge">Export</span>
+  </div>
+</header>
+
+<!-- 1. LEITURA -->
+<div class="sl">1 · Leitura de dados</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">📂</div><h3>pd.read_csv()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Básico</span>
+df = pd.<span class="kw">read_csv</span>(<span class="str">"dados.csv"</span>)
+
+<span class="cm"># Encoding para acentos</span>
+df = pd.<span class="kw">read_csv</span>(<span class="str">"dados.csv"</span>, <span class="param">encoding</span>=<span class="str">"latin1"</span>)
+
+<span class="cm"># Separador ; e parsear datas direto</span>
+df = pd.<span class="kw">read_csv</span>(<span class="str">"dados.csv"</span>, <span class="param">sep</span>=<span class="str">";"</span>,
+                  <span class="param">parse_dates</span>=[<span class="str">"Data"</span>])
+
+<span class="cm"># Colunas específicas + pular linhas</span>
+df = pd.<span class="kw">read_csv</span>(<span class="str">"big.csv"</span>,
+                  <span class="param">usecols</span>=[<span class="str">"id"</span>, <span class="str">"valor"</span>],
+                  <span class="param">skiprows</span>=<span class="num">2</span>, <span class="param">low_memory</span>=<span class="kw">False</span>)
+
+<span class="cm"># Leitura em chunks (arquivos enormes)</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> pd.<span class="kw">read_csv</span>(<span class="str">"big.csv"</span>, <span class="param">chunksize</span>=<span class="num">10000</span>):
+    process(chunk)</code></pre>
+      <div class="tr"><span class="t tu">Ingestão</span><span class="t ti">latin1 resolve maioria dos erros de acentuação</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">📊</div><h3>read_excel · DataFrame · outros formatos</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Excel — aba específica / todas as abas</span>
+df  = pd.<span class="kw">read_excel</span>(<span class="str">"Vendas.xlsx"</span>, <span class="param">sheet_name</span>=<span class="str">"Jan"</span>)
+dfs = pd.<span class="kw">read_excel</span>(<span class="str">"Vendas.xlsx"</span>, <span class="param">sheet_name</span>=<span class="kw">None</span>)
+
+<span class="cm"># Criar a partir de dicionário</span>
+df = pd.<span class="kw">DataFrame</span>({
+    <span class="str">"produto"</span>: [<span class="str">"arroz"</span>, <span class="str">"feijão"</span>],
+    <span class="str">"valor"</span>:   [<span class="num">10.5</span>, <span class="num">8.0</span>],
+})
+
+<span class="cm"># Outros formatos comuns em DS</span>
+df = pd.<span class="kw">read_parquet</span>(<span class="str">"dados.parquet"</span>)  <span class="cm"># + rápido</span>
+df = pd.<span class="kw">read_json</span>(<span class="str">"dados.json"</span>)
+df = pd.<span class="kw">read_sql</span>(query, connection)
+df = pd.<span class="kw">read_html</span>(<span class="str">"https://..."</span>)[<span class="num">0</span>]    <span class="cm"># tabela de site</span></code></pre>
+      <div class="tr"><span class="t tu">Ingestão</span><span class="t ta">Parquet é ideal para datasets grandes</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 2. INSPEÇÃO -->
+<div class="sl">2 · Inspeção do DataFrame</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(167,139,250,0.12);">🔍</div><h3>Visão geral e estatísticas</h3></div>
+    <div class="cb">
+      <pre><code>df.<span class="kw">head</span>(<span class="num">10</span>)              <span class="cm"># primeiras linhas</span>
+df.<span class="kw">tail</span>(<span class="num">10</span>)              <span class="cm"># últimas linhas</span>
+df.<span class="kw">sample</span>(<span class="num">15</span>)            <span class="cm"># amostra aleatória</span>
+df.<span class="kw">shape</span>                  <span class="cm"># (linhas, colunas)</span>
+df.<span class="kw">dtypes</span>                 <span class="cm"># tipo de cada coluna</span>
+df.<span class="kw">info</span>()                  <span class="cm"># tipos + nulos + memória</span>
+df.<span class="kw">describe</span>().<span class="kw">round</span>(<span class="num">2</span>)    <span class="cm"># estatísticas numéricas</span>
+df.<span class="kw">describe</span>(<span class="param">include</span>=<span class="str">"object"</span>) <span class="cm"># categóricas</span>
+df.<span class="kw">isnull</span>().<span class="kw">sum</span>()          <span class="cm"># nulos por coluna</span>
+(df.<span class="kw">isnull</span>().<span class="kw">sum</span>() / <span class="fn">len</span>(df) <span class="op">*</span> <span class="num">100</span>).<span class="kw">round</span>(<span class="num">1</span>) <span class="cm"># %</span>
+df.<span class="kw">nunique</span>()               <span class="cm"># qtd valores únicos</span>
+df[<span class="str">"Col"</span>].<span class="kw">unique</span>()         <span class="cm"># lista de valores únicos</span>
+df.<span class="kw">corr</span>(<span class="param">numeric_only</span>=<span class="kw">True</span>) <span class="cm"># matriz de correlação</span>
+df[<span class="str">"Col"</span>].<span class="kw">quantile</span>([<span class="num">.25</span>,<span class="num">.5</span>,<span class="num">.75</span>,<span class="num">.9</span>])</code></pre>
+      <div class="tr"><span class="t tu">EDA</span><span class="t ti">Executar antes de qualquer tratamento</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">🎯</div><h3>Seleção, filtragem e query</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Uma coluna / múltiplas colunas</span>
+df[<span class="str">"Produto"</span>]
+df[[<span class="str">"Loja"</span>, <span class="str">"Faturamento"</span>]]
+
+<span class="cm"># Filtro composto — parênteses obrigatórios</span>
+df[(df[<span class="str">"Ano"</span>] <span class="op">==</span> <span class="num">2023</span>) <span class="op">&</span> (df[<span class="str">"Mes"</span>] <span class="op">==</span> <span class="num">1</span>)]
+
+<span class="cm"># isin — equivalente ao SQL IN</span>
+df[df[<span class="str">"Loja"</span>].<span class="kw">isin</span>([<span class="str">"SP"</span>, <span class="str">"RJ"</span>])]
+
+<span class="cm"># query() — sintaxe mais legível</span>
+df.<span class="kw">query</span>(<span class="str">"Faturamento > 1000 and Loja == 'SP'"</span>)
+
+<span class="cm"># between — faixa de valores</span>
+df[df[<span class="str">"Idade"</span>].<span class="kw">between</span>(<span class="num">18</span>, <span class="num">65</span>)]
+
+<span class="cm"># iloc (posição) / loc (rótulo)</span>
+df.<span class="kw">iloc</span>[<span class="num">0</span>:<span class="num">5</span>, <span class="num">1</span>:<span class="num">3</span>]
+df.<span class="kw">loc</span>[df[<span class="str">"Status"</span>] <span class="op">==</span> <span class="str">"Ativo"</span>, [<span class="str">"Nome"</span>, <span class="str">"Valor"</span>]]</code></pre>
+      <div class="tr"><span class="t tu">Filtragem</span><span class="t tw">Parênteses obrigatórios com &amp; ou |</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">📊</div><h3>value_counts · crosstab · corr</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Frequência absoluta e relativa</span>
+df[<span class="str">"Loja"</span>].<span class="kw">value_counts</span>()
+df[<span class="str">"Loja"</span>].<span class="kw">value_counts</span>(<span class="param">normalize</span>=<span class="kw">True</span>)
+df[<span class="str">"Loja"</span>].<span class="kw">value_counts</span>(<span class="param">dropna</span>=<span class="kw">False</span>) <span class="cm"># inclui NaN</span>
+
+<span class="cm"># Tabela de contingência (frequência cruzada)</span>
+pd.<span class="kw">crosstab</span>(df[<span class="str">"Loja"</span>], df[<span class="str">"Produto"</span>])
+pd.<span class="kw">crosstab</span>(df[<span class="str">"Loja"</span>], df[<span class="str">"Produto"</span>],
+            <span class="param">values</span>=df[<span class="str">"Fat"</span>], <span class="param">aggfunc</span>=<span class="str">"sum"</span>)
+
+<span class="cm"># Correlação de uma coluna com as demais</span>
+df.<span class="kw">corr</span>()[<span class="str">"Churn"</span>].<span class="kw">sort_values</span>(<span class="param">ascending</span>=<span class="kw">False</span>)</code></pre>
+      <div class="tr"><span class="t tu">EDA</span><span class="t ti">crosstab é o pivot_table mais rápido de digitar</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 3. LIMPEZA -->
+<div class="sl">3 · Limpeza e tratamento</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(248,113,113,0.12);">🗑️</div><h3>Nulos · Duplicatas · Drop</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Remover nulos</span>
+df.<span class="kw">dropna</span>()
+df.<span class="kw">dropna</span>(<span class="param">subset</span>=[<span class="str">"col1"</span>, <span class="str">"col2"</span>])
+df.<span class="kw">dropna</span>(<span class="param">how</span>=<span class="str">"all"</span>, <span class="param">axis</span>=<span class="num">1</span>)  <span class="cm"># col 100% vazia</span>
+
+<span class="cm"># Preencher nulos</span>
+df[<span class="str">"Loja"</span>].<span class="kw">fillna</span>(<span class="str">"Online"</span>)
+df[<span class="str">"Renda"</span>].<span class="kw">fillna</span>(df[<span class="str">"Renda"</span>].<span class="kw">median</span>())
+df.<span class="kw">ffill</span>()   <span class="cm"># propaga valor anterior</span>
+df.<span class="kw">bfill</span>()   <span class="cm"># propaga valor seguinte</span>
+
+<span class="cm"># Remover duplicatas</span>
+df.<span class="kw">drop_duplicates</span>(<span class="param">subset</span>=[<span class="str">"ID_Pedido"</span>], <span class="param">keep</span>=<span class="str">"last"</span>)
+
+<span class="cm"># Remover colunas</span>
+df.<span class="kw">drop</span>(<span class="param">columns</span>=[<span class="str">"Col1"</span>, <span class="str">"Col2"</span>])</code></pre>
+      <div class="tr"><span class="t tu">Limpeza</span><span class="t ti">Prefira fillna(mediana) com outliers presentes</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">✏️</div><h3>Texto · Tipos · Datas</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Padronização encadeada</span>
+df[<span class="str">"Loja"</span>] = (df[<span class="str">"Loja"</span>]
+    .<span class="kw">fillna</span>(<span class="str">"Online"</span>).<span class="kw">str</span>.<span class="kw">strip</span>().<span class="kw">str</span>.<span class="kw">title</span>())
+
+<span class="cm"># Extrair com regex</span>
+df[<span class="str">"DDD"</span>] = df[<span class="str">"Fone"</span>].<span class="kw">str</span>.<span class="kw">extract</span>(<span class="str">r"\((\d{2})\)"</span>)
+
+<span class="cm"># Converter tipos</span>
+df[<span class="str">"Valor"</span>] = df[<span class="str">"Valor"</span>].<span class="kw">astype</span>(<span class="fn">float</span>)
+df[<span class="str">"Cat"</span>]   = df[<span class="str">"Cat"</span>].<span class="kw">astype</span>(<span class="str">"category"</span>) <span class="cm"># -90% RAM</span>
+
+<span class="cm"># Datas</span>
+df[<span class="str">"Data"</span>] = pd.<span class="kw">to_datetime</span>(df[<span class="str">"Data"</span>], <span class="param">format</span>=<span class="str">"%Y-%m-%d"</span>)
+df[<span class="str">"Ano"</span>]  = df[<span class="str">"Data"</span>].dt.year
+df[<span class="str">"Dia"</span>]  = df[<span class="str">"Data"</span>].dt.day_name()
+df[<span class="str">"MesAno"</span>] = df[<span class="str">"Data"</span>].dt.<span class="kw">to_period</span>(<span class="str">"M"</span>)
+
+<span class="cm"># Interpolação de nulos em série temporal</span>
+df[<span class="str">"Vendas"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">interpolate</span>(<span class="param">method</span>=<span class="str">"time"</span>)</code></pre>
+      <div class="tr"><span class="t tu">Padronização</span><span class="t ta">astype("category") economiza muita memória</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(245,158,11,0.12);">🔢</div><h3>clip · replace · where · mask</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Limitar outliers entre min e max</span>
+df[<span class="str">"Idade"</span>] = df[<span class="str">"Idade"</span>].<span class="kw">clip</span>(<span class="num">0</span>, <span class="num">120</span>)
+
+<span class="cm"># Substituir valores com dicionário</span>
+df[<span class="str">"Status"</span>] = df[<span class="str">"Status"</span>].<span class="kw">replace</span>({<span class="str">"S"</span>:<span class="str">"Sim"</span>, <span class="str">"N"</span>:<span class="str">"Não"</span>})
+
+<span class="cm"># where: mantém onde condição é True</span>
+df[<span class="str">"Valor"</span>] = df[<span class="str">"Valor"</span>].<span class="kw">where</span>(df[<span class="str">"Valor"</span>] <span class="op">></span> <span class="num">0</span>, <span class="param">other</span>=<span class="num">0</span>)
+
+<span class="cm"># mask: substitui onde condição é True</span>
+df[<span class="str">"Score"</span>] = df[<span class="str">"Score"</span>].<span class="kw">mask</span>(df[<span class="str">"Score"</span>] <span class="op">></span> <span class="num">100</span>, <span class="num">100</span>)
+
+<span class="cm"># Detectar outliers com IQR</span>
+Q1, Q3 = df[<span class="str">"Val"</span>].<span class="kw">quantile</span>([<span class="num">.25</span>, <span class="num">.75</span>])
+IQR = Q3 <span class="op">-</span> Q1
+out = df[(df[<span class="str">"Val"</span>] <span class="op"><</span> Q1<span class="op">-</span><span class="num">1.5</span><span class="op">*</span>IQR) <span class="op">|</span> (df[<span class="str">"Val"</span>] <span class="op">></span> Q3<span class="op">+</span><span class="num">1.5</span><span class="op">*</span>IQR)]</code></pre>
+      <div class="tr"><span class="t tu">Outliers</span><span class="t ti">clip() é mais simples do que filtrar e deletar</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 4. RESHAPE -->
+<div class="sl">4 · Reshape — pivotar, empilhar, derreter</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(167,139,250,0.12);">↔️</div><h3>melt() — wide → long</h3></div>
+    <div class="cb">
+      <p class="cd">Transforma colunas em linhas. Formato tidy exigido por seaborn e plotly.</p>
+      <pre><code><span class="cm"># Wide: | Loja | Jan | Fev | Mar |</span>
+df_long = df.<span class="kw">melt</span>(
+    <span class="param">id_vars</span>=<span class="str">"Loja"</span>,
+    <span class="param">value_vars</span>=[<span class="str">"Jan"</span>, <span class="str">"Fev"</span>, <span class="str">"Mar"</span>],
+    <span class="param">var_name</span>=<span class="str">"Mes"</span>,
+    <span class="param">value_name</span>=<span class="str">"Faturamento"</span>
+)
+<span class="cm"># Long: | Loja | Mes | Faturamento |</span>
+
+<span class="cm"># Múltiplas colunas fixas</span>
+df.<span class="kw">melt</span>(<span class="param">id_vars</span>=[<span class="str">"Loja"</span>, <span class="str">"Regiao"</span>])</code></pre>
+      <div class="tr"><span class="t tu">Reshape</span><span class="t ti">Obrigatório antes de plotar séries temporais</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">⬆️</div><h3>pivot_table() — long → wide</h3></div>
+    <div class="cb">
+      <p class="cd">Cria tabelas dinâmicas — equivalente ao pivot table do Excel.</p>
+      <pre><code><span class="cm"># Faturamento médio por Loja x Produto</span>
+tabela = df.<span class="kw">pivot_table</span>(
+    <span class="param">values</span>=<span class="str">"Faturamento"</span>,
+    <span class="param">index</span>=<span class="str">"Loja"</span>,
+    <span class="param">columns</span>=<span class="str">"Produto"</span>,
+    <span class="param">aggfunc</span>=<span class="str">"mean"</span>,  <span class="cm"># sum, count, median...</span>
+    <span class="param">fill_value</span>=<span class="num">0</span>,
+    <span class="param">margins</span>=<span class="kw">True</span>     <span class="cm"># adiciona totais</span>
+)
+
+<span class="cm"># pivot() simples (sem agregação)</span>
+df.<span class="kw">pivot</span>(<span class="param">index</span>=<span class="str">"Data"</span>, <span class="param">columns</span>=<span class="str">"Produto"</span>,
+         <span class="param">values</span>=<span class="str">"Vendas"</span>)</code></pre>
+      <div class="tr"><span class="t tu">Análise tabular</span><span class="t tw">pivot() falha com duplicatas — use pivot_table()</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">📐</div><h3>stack() · unstack() · T</h3></div>
+    <div class="cb">
+      <p class="cd">Rotaciona níveis de MultiIndex entre linhas e colunas.</p>
+      <pre><code><span class="cm"># stack: colunas → nível de índice</span>
+df_stacked = df.<span class="kw">stack</span>()
+
+<span class="cm"># unstack: nível de índice → colunas</span>
+df.<span class="kw">unstack</span>(<span class="param">level</span>=<span class="num">0</span>)   <span class="cm"># 1º nível</span>
+df.<span class="kw">unstack</span>(<span class="param">level</span>=-<span class="num">1</span>)  <span class="cm"># último nível</span>
+
+<span class="cm"># Caso de uso: groupby multinível → heatmap</span>
+resultado = (
+    df.<span class="kw">groupby</span>([<span class="str">"Loja"</span>, <span class="str">"Mes"</span>])[<span class="str">"Fat"</span>]
+      .<span class="kw">sum</span>()
+      .<span class="kw">unstack</span>(<span class="str">"Mes"</span>)  <span class="cm"># meses viram colunas</span>
+      .<span class="kw">fillna</span>(<span class="num">0</span>)
+)
+
+<span class="cm"># Transpor (linhas ↔ colunas)</span>
+df.<span class="kw">T</span></code></pre>
+      <div class="tr"><span class="t tu">Reshape</span><span class="t ti">unstack() → resultado ideal para heatmaps</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(251,146,60,0.12);">🔗</div><h3>concat()</h3></div>
+    <div class="cb">
+      <p class="cd">Empilha DataFrames verticalmente ou horizontalmente.</p>
+      <pre><code><span class="cm"># Empilhar verticalmente</span>
+df = pd.<span class="kw">concat</span>([df_jan, df_fev, df_mar],
+               <span class="param">ignore_index</span>=<span class="kw">True</span>)
+
+<span class="cm"># Juntar lado a lado (por posição)</span>
+df = pd.<span class="kw">concat</span>([df_a, df_b], <span class="param">axis</span>=<span class="num">1</span>)
+
+<span class="cm"># Adicionar chaves identificadoras</span>
+df = pd.<span class="kw">concat</span>([df_2022, df_2023],
+               <span class="param">keys</span>=[<span class="str">"2022"</span>, <span class="str">"2023"</span>])
+
+<span class="cm"># Concatenar lista de CSVs</span>
+<span class="kw">import</span> glob
+dfs = [pd.<span class="kw">read_csv</span>(f) <span class="kw">for</span> f <span class="kw">in</span> <span class="fn">glob</span>.<span class="kw">glob</span>(<span class="str">"*.csv"</span>)]
+df  = pd.<span class="kw">concat</span>(dfs, <span class="param">ignore_index</span>=<span class="kw">True</span>)</code></pre>
+      <div class="tr"><span class="t tw">df.append() depreciado no pandas ≥ 2.0</span><span class="t tu">Use pd.concat()</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 5. MERGE -->
+<div class="sl">5 · Combinação de tabelas — merge e join</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(248,113,113,0.12);">🔗</div><h3>df.merge() — SQL JOINs</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Inner (padrão)</span>
+df = df_a.<span class="kw">merge</span>(df_b, <span class="param">on</span>=<span class="str">"Loja"</span>)
+
+<span class="cm"># Left join</span>
+df = df_a.<span class="kw">merge</span>(df_b, <span class="param">on</span>=<span class="str">"Loja"</span>, <span class="param">how</span>=<span class="str">"left"</span>)
+
+<span class="cm"># Chaves com nomes diferentes</span>
+df = df_a.<span class="kw">merge</span>(df_b,
+    <span class="param">left_on</span>=<span class="str">"id_cliente"</span>, <span class="param">right_on</span>=<span class="str">"cliente_id"</span>,
+    <span class="param">how</span>=<span class="str">"left"</span>)
+
+<span class="cm"># Outer com indicador de origem</span>
+df = df_a.<span class="kw">merge</span>(df_b, <span class="param">how</span>=<span class="str">"outer"</span>, <span class="param">indicator</span>=<span class="kw">True</span>)
+<span class="cm"># _merge: both | left_only | right_only</span>
+
+<span class="cm"># Múltiplas chaves</span>
+df = df_a.<span class="kw">merge</span>(df_b, <span class="param">on</span>=[<span class="str">"Loja"</span>, <span class="str">"Produto"</span>])</code></pre>
+      <div class="tr"><span class="t tu">Enriquecimento</span><span class="t tw">Padronize strings antes (strip + title)</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(245,158,11,0.12);">📌</div><h3>join() · merge_asof() · compare()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># join() — une pelo índice (mais rápido)</span>
+df = df_a.<span class="kw">join</span>(df_b, <span class="param">how</span>=<span class="str">"left"</span>)
+
+<span class="cm"># merge_asof — join aproximado por data</span>
+<span class="cm"># Pega cotação mais recente antes da compra</span>
+df = pd.<span class="kw">merge_asof</span>(
+    df_compras.<span class="kw">sort_values</span>(<span class="str">"Data"</span>),
+    df_cotacoes.<span class="kw">sort_values</span>(<span class="str">"Data"</span>),
+    <span class="param">on</span>=<span class="str">"Data"</span>, <span class="param">by</span>=<span class="str">"Moeda"</span>,
+    <span class="param">direction</span>=<span class="str">"backward"</span>
+)
+
+<span class="cm"># compare() — diff entre dois DataFrames</span>
+diff = df_antes.<span class="kw">compare</span>(df_depois)
+
+<span class="cm"># Checar integridade após merge</span>
+<span class="fn">print</span>(df_merged.<span class="kw">isnull</span>().<span class="kw">sum</span>())  <span class="cm"># nulos = não casaram</span></code></pre>
+      <div class="tr"><span class="t tu">Time-series join</span><span class="t ti">merge_asof essencial em dados financeiros</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 6. AGRUPAMENTO -->
+<div class="sl">6 · Agrupamento e agregação</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">📦</div><h3>groupby() + agg()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Soma simples</span>
+df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>)[<span class="str">"Fat"</span>].<span class="kw">sum</span>()
+
+<span class="cm"># Manter coluna (não virar índice)</span>
+df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>, <span class="param">as_index</span>=<span class="kw">False</span>)[<span class="str">"Fat"</span>].<span class="kw">sum</span>()
+
+<span class="cm"># Múltiplas agregações</span>
+df.<span class="kw">groupby</span>(<span class="str">"Produto"</span>).<span class="kw">agg</span>({
+    <span class="str">"Faturamento"</span>: [<span class="str">"sum"</span>, <span class="str">"mean"</span>, <span class="str">"max"</span>],
+    <span class="str">"Qtd"</span>: <span class="str">"sum"</span>,
+})
+
+<span class="cm"># Agregação nomeada (pandas ≥ 0.25)</span>
+df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>).<span class="kw">agg</span>(
+    Fat_Total    = (<span class="str">"Fat"</span>, <span class="str">"sum"</span>),
+    Ticket_Medio = (<span class="str">"Fat"</span>, <span class="str">"mean"</span>),
+    Qtd_Pedidos  = (<span class="str">"ID"</span>, <span class="str">"count"</span>),
+)</code></pre>
+      <div class="tr"><span class="t tu">Análise</span><span class="t ti">Agregação nomeada gera colunas com nome limpo</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">🪟</div><h3>transform() · rolling() · expanding()</h3></div>
+    <div class="cb">
+      <p class="cd">Agrega sem reduzir o número de linhas — essencial para criar features.</p>
+      <pre><code><span class="cm"># transform: mantém o shape original</span>
+df[<span class="str">"Fat_Media_Loja"</span>] = (
+    df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>)[<span class="str">"Fat"</span>].<span class="kw">transform</span>(<span class="str">"mean"</span>)
+)
+
+<span class="cm"># Desvio do valor em relação à média do grupo</span>
+df[<span class="str">"Desvio"</span>] = (
+    df[<span class="str">"Fat"</span>] <span class="op">-</span>
+    df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>)[<span class="str">"Fat"</span>].<span class="kw">transform</span>(<span class="str">"mean"</span>)
+)
+
+<span class="cm"># Média móvel de 3 períodos</span>
+df[<span class="str">"MM3"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">rolling</span>(<span class="num">3</span>).<span class="kw">mean</span>()
+
+<span class="cm"># Faturamento acumulado</span>
+df[<span class="str">"Fat_Acum"</span>] = df[<span class="str">"Fat"</span>].<span class="kw">expanding</span>().<span class="kw">sum</span>()
+
+<span class="cm"># Rank dentro do grupo</span>
+df[<span class="str">"Rank"</span>] = (
+    df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>)[<span class="str">"Fat"</span>]
+      .<span class="kw">rank</span>(<span class="param">ascending</span>=<span class="kw">False</span>)
+)</code></pre>
+      <div class="tr"><span class="t tu">Feature Engineering</span><span class="t ti">transform() é mais rápido que apply() para isso</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(245,158,11,0.12);">⬆️</div><h3>sort_values() · nlargest() · rank()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Ordenação simples / múltipla</span>
+df.<span class="kw">sort_values</span>(<span class="str">"Fat"</span>, <span class="param">ascending</span>=<span class="kw">False</span>)
+df.<span class="kw">sort_values</span>([<span class="str">"Região"</span>, <span class="str">"Fat"</span>],
+               <span class="param">ascending</span>=[<span class="kw">True</span>, <span class="kw">False</span>])
+
+<span class="cm"># Top N / Bottom N</span>
+df.<span class="kw">nlargest</span>(<span class="num">10</span>, <span class="str">"Faturamento"</span>)
+df.<span class="kw">nsmallest</span>(<span class="num">5</span>, <span class="str">"Ticket_Medio"</span>)
+
+<span class="cm"># Ranking global (método dense = sem gaps)</span>
+df[<span class="str">"Rank"</span>] = df[<span class="str">"Fat"</span>].<span class="kw">rank</span>(
+    <span class="param">method</span>=<span class="str">"dense"</span>, <span class="param">ascending</span>=<span class="kw">False</span>
+)
+
+<span class="cm"># Redefinir índice após sort/groupby</span>
+df.<span class="kw">reset_index</span>(<span class="param">drop</span>=<span class="kw">True</span>)</code></pre>
+      <div class="tr"><span class="t tu">Ranking</span><span class="t ti">nlargest() mais conciso que sort+head</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 7. FEATURE ENGINEERING -->
+<div class="sl">7 · Feature Engineering — criação de variáveis</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(167,139,250,0.12);">🧮</div><h3>get_dummies() — One-Hot Encoding</h3></div>
+    <div class="cb">
+      <p class="cd">Converte variáveis categóricas em colunas binárias 0/1. Obrigatório para ML.</p>
+      <pre><code><span class="cm"># Encoding básico</span>
+df_enc = pd.<span class="kw">get_dummies</span>(df, <span class="param">columns</span>=[<span class="str">"Loja"</span>, <span class="str">"Produto"</span>])
+
+<span class="cm"># drop_first=True evita multicolinearidade</span>
+df_enc = pd.<span class="kw">get_dummies</span>(df, <span class="param">columns</span>=[<span class="str">"Loja"</span>],
+                          <span class="param">drop_first</span>=<span class="kw">True</span>, <span class="param">dtype</span>=<span class="fn">int</span>)
+
+<span class="cm"># Tratar NaN como categoria própria</span>
+df_enc = pd.<span class="kw">get_dummies</span>(df, <span class="param">dummy_na</span>=<span class="kw">True</span>)
+
+<span class="cm"># Alternativa: LabelEncoder do sklearn</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> LabelEncoder
+df[<span class="str">"Cat_Cod"</span>] = LabelEncoder().<span class="kw">fit_transform</span>(df[<span class="str">"Cat"</span>])</code></pre>
+      <div class="tr"><span class="t tu">ML Prep</span><span class="t tw">drop_first=True obrigatório em regressão linear</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">✂️</div><h3>cut() · qcut() — Discretização</h3></div>
+    <div class="cb">
+      <p class="cd">Transforma variáveis contínuas em categorias (bins).</p>
+      <pre><code><span class="cm"># cut: intervalos manuais</span>
+df[<span class="str">"Faixa_Etaria"</span>] = pd.<span class="kw">cut</span>(
+    df[<span class="str">"Idade"</span>],
+    <span class="param">bins</span>=[<span class="num">0</span>, <span class="num">18</span>, <span class="num">35</span>, <span class="num">60</span>, <span class="num">120</span>],
+    <span class="param">labels</span>=[<span class="str">"Jovem"</span>, <span class="str">"Adulto"</span>, <span class="str">"Sênior"</span>, <span class="str">"Idoso"</span>]
+)
+
+<span class="cm"># qcut: quantis (igual frequência)</span>
+df[<span class="str">"Quartil"</span>] = pd.<span class="kw">qcut</span>(
+    df[<span class="str">"Faturamento"</span>], <span class="param">q</span>=<span class="num">4</span>,
+    <span class="param">labels</span>=[<span class="str">"Q1"</span>, <span class="str">"Q2"</span>, <span class="str">"Q3"</span>, <span class="str">"Q4"</span>]
+)
+
+<span class="cm"># Decis de score de risco (segmentação)</span>
+df[<span class="str">"Decil"</span>] = pd.<span class="kw">qcut</span>(
+    df[<span class="str">"Score"</span>], <span class="param">q</span>=<span class="num">10</span>,
+    <span class="param">labels</span>=<span class="fn">range</span>(<span class="num">1</span>, <span class="num">11</span>)
+)</code></pre>
+      <div class="tr"><span class="t tu">Segmentação</span><span class="t ti">qcut garante grupos com igual nº de observações</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(248,113,113,0.12);">⚡</div><h3>np.where · np.select · apply</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># np.where: condição binária</span>
+df[<span class="str">"Bateu Meta"</span>] = np.<span class="kw">where</span>(
+    df[<span class="str">"Fat"</span>] <span class="op">>=</span> df[<span class="str">"Meta"</span>], <span class="str">"Sim"</span>, <span class="str">"Não"</span>
+)
+
+<span class="cm"># np.select: múltiplas condições</span>
+conds   = [df[<span class="str">"Score"</span>] <span class="op">>=</span> <span class="num">80</span>, df[<span class="str">"Score"</span>] <span class="op">>=</span> <span class="num">60</span>]
+choices = [<span class="str">"Alto"</span>, <span class="str">"Médio"</span>]
+df[<span class="str">"Perfil"</span>] = np.<span class="kw">select</span>(conds, choices, <span class="param">default</span>=<span class="str">"Baixo"</span>)
+
+<span class="cm"># apply: função customizada por linha</span>
+df[<span class="str">"Margem"</span>] = df.<span class="kw">apply</span>(
+    <span class="kw">lambda</span> r: r[<span class="str">"Lucro"</span>] / r[<span class="str">"Receita"</span>], <span class="param">axis</span>=<span class="num">1</span>
+)
+
+<span class="cm"># map: mapeamento via dicionário</span>
+df[<span class="str">"Num"</span>] = df[<span class="str">"Status"</span>].<span class="kw">map</span>({<span class="str">"Ativo"</span>:<span class="num">1</span>, <span class="str">"Inativo"</span>:<span class="num">0</span>})</code></pre>
+      <div class="tr"><span class="t tu">Feature Eng.</span><span class="t ti">np.select() substitui múltiplos np.where encadeados</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">↕️</div><h3>shift() · diff() · pct_change()</h3></div>
+    <div class="cb">
+      <p class="cd">Cria variáveis de lag, diferença e variação — essenciais em séries temporais.</p>
+      <pre><code><span class="cm"># Valor do período anterior (lag 1)</span>
+df[<span class="str">"Vendas_Lag1"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">shift</span>(<span class="num">1</span>)
+
+<span class="cm"># Lag de 12 meses (comparação ano a ano)</span>
+df[<span class="str">"Vendas_AA"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">shift</span>(<span class="num">12</span>)
+
+<span class="cm"># Diferença absoluta</span>
+df[<span class="str">"Variacao"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">diff</span>(<span class="num">1</span>)
+
+<span class="cm"># Variação percentual</span>
+df[<span class="str">"Crescimento"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">pct_change</span>()
+
+<span class="cm"># Dentro de grupos</span>
+df[<span class="str">"Var_Loja"</span>] = (
+    df.<span class="kw">groupby</span>(<span class="str">"Loja"</span>)[<span class="str">"Vendas"</span>].<span class="kw">pct_change</span>()
+)</code></pre>
+      <div class="tr"><span class="t tu">Séries Temporais</span><span class="t tw">shift() dentro de groupby evita data leakage</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(251,146,60,0.12);">🔄</div><h3>assign() · pipe() · rename()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># assign: criar colunas no estilo fluente</span>
+df = df.<span class="kw">assign</span>(
+    Margem    = df[<span class="str">"Lucro"</span>] / df[<span class="str">"Receita"</span>],
+    Ano       = df[<span class="str">"Data"</span>].dt.year,
+    Cat_Valor = pd.<span class="kw">cut</span>(df[<span class="str">"Valor"</span>], <span class="num">3</span>)
+)
+
+<span class="cm"># pipe: encadeia transformações</span>
+df_final = (df
+    .<span class="kw">pipe</span>(limpar_nulos)
+    .<span class="kw">pipe</span>(padronizar_texto)
+    .<span class="kw">pipe</span>(criar_features)
+)
+
+<span class="cm"># Limpar nomes de colunas automaticamente</span>
+df.<span class="kw">columns</span> = (df.<span class="kw">columns</span>
+    .<span class="kw">str</span>.<span class="kw">lower</span>()
+    .<span class="kw">str</span>.<span class="kw">strip</span>()
+    .<span class="kw">str</span>.<span class="kw">replace</span>(<span class="str">" "</span>, <span class="str">"_"</span>, <span class="param">regex</span>=<span class="kw">False</span>)
+)
+
+<span class="cm"># Normalização Min-Max (0 a 1)</span>
+col = df[<span class="str">"Valor"</span>]
+df[<span class="str">"Norm"</span>] = (col<span class="op">-</span>col.<span class="kw">min</span>()) / (col.<span class="kw">max</span>()<span class="op">-</span>col.<span class="kw">min</span>())
+
+<span class="cm"># Log transform (reduz skewness)</span>
+df[<span class="str">"LogValor"</span>] = np.<span class="kw">log1p</span>(df[<span class="str">"Valor"</span>])</code></pre>
+      <div class="tr"><span class="t tu">Pipeline</span><span class="t ti">pipe() torna pipelines legíveis e reutilizáveis</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 8. TIME SERIES -->
+<div class="sl">8 · Séries temporais</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">📅</div><h3>resample() · date_range()</h3></div>
+    <div class="cb">
+      <p class="cd">Reamostragem temporal — agrupa dados por frequência.</p>
+      <pre><code><span class="cm"># Precisa de índice datetime</span>
+df = df.<span class="kw">set_index</span>(<span class="str">"Data"</span>)
+
+<span class="cm"># Agrupar por mês</span>
+df.<span class="kw">resample</span>(<span class="str">"ME"</span>)[<span class="str">"Vendas"</span>].<span class="kw">sum</span>()
+
+<span class="cm"># Frequências: D=dia, W=sem, ME=mês, QE=trim, YE=ano</span>
+df.<span class="kw">resample</span>(<span class="str">"W"</span>).<span class="kw">agg</span>({
+    <span class="str">"Vendas"</span>: <span class="str">"sum"</span>, <span class="str">"Ticket"</span>: <span class="str">"mean"</span>
+})
+
+<span class="cm"># Criar range de datas</span>
+datas = pd.<span class="kw">date_range</span>(<span class="str">"2023-01-01"</span>, <span class="str">"2023-12-31"</span>, <span class="param">freq</span>=<span class="str">"D"</span>)
+
+<span class="cm"># Dias úteis apenas</span>
+uteis = pd.<span class="kw">date_range</span>(<span class="str">"2023-01-01"</span>, <span class="str">"2023-12-31"</span>, <span class="param">freq</span>=<span class="str">"B"</span>)</code></pre>
+      <div class="tr"><span class="t tu">Time Series</span><span class="t ti">resample() substitui groupby + to_period()</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">〰️</div><h3>rolling() · ewm() · expanding()</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Média móvel simples (janela 7 períodos)</span>
+df[<span class="str">"MM7"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">rolling</span>(<span class="num">7</span>).<span class="kw">mean</span>()
+
+<span class="cm"># Média móvel centrada</span>
+df[<span class="str">"MM7c"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">rolling</span>(<span class="num">7</span>, <span class="param">center</span>=<span class="kw">True</span>).<span class="kw">mean</span>()
+
+<span class="cm"># Média exponencial ponderada</span>
+df[<span class="str">"EWM"</span>] = df[<span class="str">"Vendas"</span>].<span class="kw">ewm</span>(<span class="param">span</span>=<span class="num">7</span>).<span class="kw">mean</span>()
+
+<span class="cm"># Volatilidade (desvio padrão móvel)</span>
+df[<span class="str">"Vol"</span>] = df[<span class="str">"Preco"</span>].<span class="kw">rolling</span>(<span class="num">30</span>).<span class="kw">std</span>()
+
+<span class="cm"># Acumulado crescente</span>
+df[<span class="str">"Fat_Acum"</span>] = df[<span class="str">"Fat"</span>].<span class="kw">expanding</span>().<span class="kw">sum</span>()</code></pre>
+      <div class="tr"><span class="t tu">Suavização</span><span class="t ti">ewm() reage mais rápido a mudanças que rolling()</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 9. EXPORT -->
+<div class="sl">9 · Exportação e visualização</div>
+<div class="grid ga">
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(52,211,153,0.12);">💾</div><h3>to_csv · to_excel · to_parquet</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># CSV</span>
+df.<span class="kw">to_csv</span>(<span class="str">"resultado.csv"</span>, <span class="param">index</span>=<span class="kw">False</span>)
+
+<span class="cm"># Excel com múltiplas abas</span>
+<span class="kw">with</span> pd.<span class="kw">ExcelWriter</span>(<span class="str">"relatorio.xlsx"</span>) <span class="kw">as</span> w:
+    df_lojas.<span class="kw">to_excel</span>(w, <span class="param">sheet_name</span>=<span class="str">"Lojas"</span>,    <span class="param">index</span>=<span class="kw">False</span>)
+    df_prod.<span class="kw">to_excel</span>(w,  <span class="param">sheet_name</span>=<span class="str">"Produtos"</span>, <span class="param">index</span>=<span class="kw">False</span>)
+
+<span class="cm"># Parquet (mais rápido e compacto)</span>
+df.<span class="kw">to_parquet</span>(<span class="str">"dados.parquet"</span>, <span class="param">index</span>=<span class="kw">False</span>)
+
+<span class="cm"># JSON orientado a registros</span>
+df.<span class="kw">to_json</span>(<span class="str">"dados.json"</span>, <span class="param">orient</span>=<span class="str">"records"</span>,
+           <span class="param">force_ascii</span>=<span class="kw">False</span>)</code></pre>
+      <div class="tr"><span class="t tu">Export</span><span class="t tw">index=False evita coluna extra desnecessária</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="ci" style="background:rgba(96,165,250,0.12);">📈</div><h3>plot() e df.style</h3></div>
+    <div class="cb">
+      <pre><code><span class="cm"># Tipos de gráfico</span>
+df.<span class="kw">plot</span>()                           <span class="cm"># linha</span>
+df.<span class="kw">plot</span>(<span class="param">kind</span>=<span class="str">"bar"</span>, <span class="param">figsize</span>=(<span class="num">10</span>,<span class="num">5</span>))  <span class="cm"># barras</span>
+df.<span class="kw">plot</span>(<span class="param">kind</span>=<span class="str">"scatter"</span>, <span class="param">x</span>=<span class="str">"A"</span>, <span class="param">y</span>=<span class="str">"B"</span>)
+df[<span class="str">"Col"</span>].<span class="kw">hist</span>(<span class="param">bins</span>=<span class="num">30</span>)
+
+<span class="cm"># Estilo de tabela — ótimo no Jupyter</span>
+(df.<span class="kw">style</span>
+   .<span class="kw">highlight_max</span>(<span class="param">color</span>=<span class="str">"lightgreen"</span>)
+   .<span class="kw">highlight_min</span>(<span class="param">color</span>=<span class="str">"#ffcccc"</span>)
+   .<span class="kw">format</span>({<span class="str">"Fat"</span>: <span class="str">"R${:,.2f}"</span>, <span class="str">"Pct"</span>: <span class="str">"{:.1%}"</span>})
+   .<span class="kw">background_gradient</span>(<span class="param">cmap</span>=<span class="str">"Blues"</span>)
+)</code></pre>
+      <div class="tr"><span class="t tu">EDA Visual</span><span class="t ti">df.style funciona diretamente no Jupyter</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PIPELINE COMPLETO -->
+<div class="sl">Pipeline completo — pré-processamento para ML</div>
+<div class="grid" style="margin-bottom:40px;">
+  <div class="card fw" style="background:var(--surface2);border-color:rgba(167,139,250,0.2);">
+    <div class="ch"><div class="ci" style="background:rgba(167,139,250,0.15);">⚡</div><h3 style="color:var(--a1);">Do CSV ao modelo: pipeline real</h3></div>
+    <div class="cb">
+      <pre><code><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy  <span class="kw">as</span> np
+
+<span class="cm"># 1. Ingestão</span>
+df = pd.<span class="kw">read_csv</span>(<span class="str">"clientes.csv"</span>, <span class="param">encoding</span>=<span class="str">"latin1"</span>, <span class="param">parse_dates</span>=[<span class="str">"Data_Cadastro"</span>])
+
+<span class="cm"># 2. Inspeção rápida</span>
+<span class="fn">print</span>(df.shape, df.<span class="kw">isnull</span>().<span class="kw">sum</span>().<span class="kw">to_dict</span>())
+
+<span class="cm"># 3. Limpeza</span>
+df = df.<span class="kw">drop_duplicates</span>(<span class="param">subset</span>=[<span class="str">"ID"</span>]).<span class="kw">dropna</span>(<span class="param">subset</span>=[<span class="str">"Valor"</span>])
+df[<span class="str">"Renda"</span>]  = df[<span class="str">"Renda"</span>].<span class="kw">fillna</span>(df[<span class="str">"Renda"</span>].<span class="kw">median</span>())
+df[<span class="str">"Cidade"</span>] = df[<span class="str">"Cidade"</span>].<span class="kw">str</span>.<span class="kw">strip</span>().<span class="kw">str</span>.<span class="kw">title</span>()
+df[<span class="str">"Valor"</span>]  = df[<span class="str">"Valor"</span>].<span class="kw">clip</span>(<span class="num">0</span>, df[<span class="str">"Valor"</span>].<span class="kw">quantile</span>(<span class="num">0.99</span>))
+
+<span class="cm"># 4. Feature engineering</span>
+df[<span class="str">"Dias_Cliente"</span>] = (pd.<span class="kw">Timestamp</span>.<span class="kw">today</span>() <span class="op">-</span> df[<span class="str">"Data_Cadastro"</span>]).dt.days
+df[<span class="str">"Log_Renda"</span>]   = np.<span class="kw">log1p</span>(df[<span class="str">"Renda"</span>])
+df[<span class="str">"Faixa_Renda"</span>] = pd.<span class="kw">qcut</span>(df[<span class="str">"Renda"</span>], <span class="num">4</span>, <span class="param">labels</span>=[<span class="str">"D"</span>,<span class="str">"C"</span>,<span class="str">"B"</span>,<span class="str">"A"</span>])
+df[<span class="str">"Perfil"</span>]      = np.<span class="kw">select</span>(
+    [df[<span class="str">"Score"</span>] <span class="op">>=</span> <span class="num">80</span>, df[<span class="str">"Score"</span>] <span class="op">>=</span> <span class="num">60</span>],
+    [<span class="str">"Alto"</span>, <span class="str">"Médio"</span>], <span class="param">default</span>=<span class="str">"Baixo"</span>
+)
+
+<span class="cm"># 5. Encoding</span>
+df_enc = pd.<span class="kw">get_dummies</span>(df,
+    <span class="param">columns</span>=[<span class="str">"Cidade"</span>, <span class="str">"Faixa_Renda"</span>, <span class="str">"Perfil"</span>],
+    <span class="param">drop_first</span>=<span class="kw">True</span>, <span class="param">dtype</span>=<span class="fn">int</span>
+)
+
+<span class="cm"># 6. Export</span>
+df_enc.<span class="kw">to_parquet</span>(<span class="str">"clientes_processados.parquet"</span>, <span class="param">index</span>=<span class="kw">False</span>)</code></pre>
+      <div class="tr">
+        <span class="t tu">Ingestão</span><span class="t tu">Limpeza</span><span class="t tu">Feature Eng.</span><span class="t tu">Encoding</span><span class="t tu">Export</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- REFERÊNCIA RÁPIDA -->
+<div class="sl">Referência rápida — todos os comandos</div>
+<div class="card" style="margin-bottom:48px;">
+  <div class="qg">
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_csv()</code><span style="font-size:11px;color:var(--muted);">Ler CSV</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_excel()</code><span style="font-size:11px;color:var(--muted);">Ler Excel</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_parquet()</code><span style="font-size:11px;color:var(--muted);">Ler Parquet</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_json()</code><span style="font-size:11px;color:var(--muted);">Ler JSON</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_sql()</code><span style="font-size:11px;color:var(--muted);">Ler banco de dados</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.read_html()</code><span style="font-size:11px;color:var(--muted);">Ler tabela de site</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.DataFrame()</code><span style="font-size:11px;color:var(--muted);">Criar DataFrame</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.head() / .tail()</code><span style="font-size:11px;color:var(--muted);">Primeiras/últimas linhas</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.sample()</code><span style="font-size:11px;color:var(--muted);">Amostra aleatória</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.shape / .dtypes</code><span style="font-size:11px;color:var(--muted);">Dimensões e tipos</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.info() / .describe()</code><span style="font-size:11px;color:var(--muted);">Resumo completo</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.isnull().sum()</code><span style="font-size:11px;color:var(--muted);">Nulos por coluna</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.nunique() / .unique()</code><span style="font-size:11px;color:var(--muted);">Valores únicos</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.value_counts()</code><span style="font-size:11px;color:var(--muted);">Frequência de valores</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.corr()</code><span style="font-size:11px;color:var(--muted);">Correlação</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">pd.crosstab()</code><span style="font-size:11px;color:var(--muted);">Tabela de contingência</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.query()</code><span style="font-size:11px;color:var(--muted);">Filtro estilo SQL</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.isin() / .between()</code><span style="font-size:11px;color:var(--muted);">Filtros de lista/faixa</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.dropna() / .fillna()</code><span style="font-size:11px;color:var(--muted);">Tratar nulos</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.ffill() / .bfill()</code><span style="font-size:11px;color:var(--muted);">Propagar valores</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.interpolate()</code><span style="font-size:11px;color:var(--muted);">Interpolar nulos</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.drop() / .drop_duplicates()</code><span style="font-size:11px;color:var(--muted);">Remover</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.clip()</code><span style="font-size:11px;color:var(--muted);">Limitar outliers</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.replace()</code><span style="font-size:11px;color:var(--muted);">Substituir valores</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.where() / .mask()</code><span style="font-size:11px;color:var(--muted);">Condicional</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.str.strip/title/lower()</code><span style="font-size:11px;color:var(--muted);">Padronizar texto</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.str.extract()</code><span style="font-size:11px;color:var(--muted);">Extrair com regex</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.astype()</code><span style="font-size:11px;color:var(--muted);">Converter tipo</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">pd.to_datetime()</code><span style="font-size:11px;color:var(--muted);">Converter datas</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a3);">.dt.year/month/day_name()</code><span style="font-size:11px;color:var(--muted);">Extrair componente</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">.melt()</code><span style="font-size:11px;color:var(--muted);">Wide → Long</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">.pivot_table()</code><span style="font-size:11px;color:var(--muted);">Long → Wide</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">.pivot()</code><span style="font-size:11px;color:var(--muted);">Pivotar sem agregar</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">.stack() / .unstack()</code><span style="font-size:11px;color:var(--muted);">Rotacionar índice</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">.T</code><span style="font-size:11px;color:var(--muted);">Transpor</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a4);">pd.concat()</code><span style="font-size:11px;color:var(--muted);">Concatenar DFs</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a5);">.merge()</code><span style="font-size:11px;color:var(--muted);">JOIN entre tabelas</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a5);">.join()</code><span style="font-size:11px;color:var(--muted);">JOIN por índice</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a5);">pd.merge_asof()</code><span style="font-size:11px;color:var(--muted);">JOIN aproximado</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a5);">.compare()</code><span style="font-size:11px;color:var(--muted);">Diff entre DFs</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.groupby() + .agg()</code><span style="font-size:11px;color:var(--muted);">Agrupar e agregar</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.transform()</code><span style="font-size:11px;color:var(--muted);">Agregar sem reduzir</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.sort_values()</code><span style="font-size:11px;color:var(--muted);">Ordenar</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.nlargest() / .nsmallest()</code><span style="font-size:11px;color:var(--muted);">Top N</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.rank()</code><span style="font-size:11px;color:var(--muted);">Ranking</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a6);">.reset_index()</code><span style="font-size:11px;color:var(--muted);">Redefinir índice</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.get_dummies()</code><span style="font-size:11px;color:var(--muted);">One-Hot Encoding</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.cut()</code><span style="font-size:11px;color:var(--muted);">Binning manual</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.qcut()</code><span style="font-size:11px;color:var(--muted);">Binning por quantis</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.shift()</code><span style="font-size:11px;color:var(--muted);">Lag de períodos</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.diff() / .pct_change()</code><span style="font-size:11px;color:var(--muted);">Variação</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.rolling() / .ewm()</code><span style="font-size:11px;color:var(--muted);">Médias móveis</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.expanding()</code><span style="font-size:11px;color:var(--muted);">Acumulado</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.resample()</code><span style="font-size:11px;color:var(--muted);">Reamostragem temporal</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">pd.date_range()</code><span style="font-size:11px;color:var(--muted);">Range de datas</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.assign()</code><span style="font-size:11px;color:var(--muted);">Criar colunas (fluente)</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.pipe()</code><span style="font-size:11px;color:var(--muted);">Encadear funções</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">.apply() / .map()</code><span style="font-size:11px;color:var(--muted);">Funções customizadas</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a1);">np.where() / np.select()</code><span style="font-size:11px;color:var(--muted);">Condicional múltipla</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.to_csv() / .to_excel()</code><span style="font-size:11px;color:var(--muted);">Exportar</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.to_parquet() / .to_json()</code><span style="font-size:11px;color:var(--muted);">Exportar outros</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.plot() / .hist()</code><span style="font-size:11px;color:var(--muted);">Visualizar</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.style</code><span style="font-size:11px;color:var(--muted);">Estilizar tabela Jupyter</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.set_index()</code><span style="font-size:11px;color:var(--muted);">Definir índice</span></div>
+    <div class="qi"><code style="font-size:11px;color:var(--a2);">.quantile()</code><span style="font-size:11px;color:var(--muted);">Percentis</span></div>
+  </div>
+</div>
+
+<footer style="text-align:center;color:var(--muted);font-size:12px;padding-bottom:24px;">
+  Desenvolvido com Claude AI
+</footer>
+
+</div>
+</body>
+</html>
